@@ -16,6 +16,10 @@ I2C I/O EXPANDER
 #define PFC_INTERRUPT_PIN D5
 #define GREEN_LED D0
 
+#define RELE0 D5        //Nueva salida rele directa del ESP8266
+#define RELE1 D6
+
+
 //Debug flags for ntpclientlib
 #define DBG_PORT Serial1
 //#define DEBUG_NTPCLIENT
@@ -26,16 +30,21 @@ I2C I/O EXPANDER
 #ifndef HAL_ESP8266_H_
 #define HAL_ESP8266_H_
 
+
+
+
 // Derived classes
 class HAL_ESP8266
 {
 public:
-    void ConfigureI2C(void (*ExternalInputInterrupt)(void));
+    //void ConfigureI2C(void (*ExternalInputInterrupt)(void));
     void SetOutputState(uint8_t outputId, RelayState state);
     uint8_t ReadInputRegisters();
-    bool OutputsEnabled = false;
+    bool OutputsEnabled = true;
     bool InputsEnabled = false;
     void ConfigurePins();
+
+
 
 void GreenLedOn() {
     digitalWrite(GREEN_LED, HIGH);

@@ -19,7 +19,10 @@
    D2 = i2c SCL
    D3 = switch to ground (reset WIFI configuration on power up)
    D4 = GPIO2 = TXD1 = TRANSMIT DEBUG SERIAL (and blue led on esp8266)
-   D5 = GPIO14 = Interrupt in from PCF8574
+   XX D5 = GPIO14 = Interrupt in from PCF8574
+   D5 = GPIO14 = RELE2
+   D6 = GPIO12 = RELE1
+
    D7 = GPIO13 = RECEIVE SERIAL
    D8 = GPIO15 = TRANSMIT SERIAL
 
@@ -80,11 +83,13 @@ AsyncWebServer server(80);
 
 void IRAM_ATTR ExternalInputInterrupt()
 {
+  /*
   if ((hal.ReadInputRegisters() & B00010000) == 0)
   {
     //Emergency Stop (J1) has triggered
     emergencyStop = true;
   }
+  */
 }
 
 //This large array holds all the information about the modules
@@ -1424,7 +1429,7 @@ void setup()
 
   hal.ConfigurePins();
 
-  hal.ConfigureI2C(ExternalInputInterrupt);
+  //hal.ConfigureI2C(ExternalInputInterrupt);
 
   //Pre configure the array
   memset(&cmi, 0, sizeof(cmi));
@@ -1467,7 +1472,8 @@ void setup()
 
   //Allow user to press SPACE BAR key on serial terminal
   //to enter text based WIFI setup
-  SERIAL_DATA.print(F("\r\n\r\n\r\nPress SPACE BAR to enter terminal based configuration...."));
+  SERIAL_DATA.print(F("\r\n\r\n\t ### DIYBMS ###"));
+  SERIAL_DATA.print(F("\r\nPress SPACE BAR to enter terminal based configuration...."));
   for (size_t i = 0; i < (3000 / 250); i++)
   {
     SERIAL_DATA.print('.');
@@ -1591,6 +1597,7 @@ void loop()
 
   // Call update to receive, decode and process incoming packets.
   myPacketSerial.checkInputStream();
+  
 
   if (NTPsyncEventTriggered)
   {

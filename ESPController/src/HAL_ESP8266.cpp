@@ -3,16 +3,16 @@
 #include "defines.h"
 #include "HAL_ESP8266.h"
 
-#ifndef _PCF8574_ESP_H
-#include <pcf8574_esp.h>
+//#ifndef _PCF8574_ESP_H
+//#include <pcf8574_esp.h>
 
 //PCF8574P has an i2c address of 0x38 instead of the normal 0x20
 
 //PCF857x pcf8574(0x38, &Wire);
-PCF857x pcf8574_0x20(0x20, &Wire);
-PCF857x pcf8574_0x38(0x38, &Wire);
+//PCF857x pcf8574_0x20(0x20, &Wire);
+//PCF857x pcf8574_0x38(0x38, &Wire);
 
-PCF857x *pcf8574;
+//PCF857x *pcf8574;
 #endif
 
 void HAL_ESP8266::ConfigurePins()
@@ -21,11 +21,19 @@ void HAL_ESP8266::ConfigurePins()
     pinMode(GREEN_LED, OUTPUT);
     //D3 is used to reset access point WIFI details on boot up
     pinMode(RESET_WIFI_PIN, INPUT_PULLUP);
+
+    pinMode(RELE0, OUTPUT);
+    digitalWrite(RELE0, LOW );
+
+    pinMode(RELE1, OUTPUT);
+    digitalWrite(RELE1, LOW );
+
 }
 
 uint8_t HAL_ESP8266::ReadInputRegisters()
 {
-    return InputsEnabled ? pcf8574->read8() : 0;
+   // return InputsEnabled ? pcf8574->read8() : 0;
+   return 0;
 }
 
 void HAL_ESP8266::SetOutputState(uint8_t outputId, RelayState state)
@@ -38,26 +46,32 @@ void HAL_ESP8266::SetOutputState(uint8_t outputId, RelayState state)
     if (OutputsEnabled)
     {
         //LOW is ON
-        pcf8574->write(outputId, (state == RelayState::RELAY_ON) ? LOW : HIGH);
-    }
-}
+      //  pcf8574->write(outputId, (state == RelayState::RELAY_ON) ? LOW : HIGH);
+    
 
-void HAL_ESP8266::ConfigureI2C(void (*ExternalInputInterrupt)(void))
-{
+        if (outputId == 0 )   digitalWrite(RELE0, (state == RelayState::RELAY_ON) ? HIGH: LOW );
+        if (outputId == 1 )   digitalWrite(RELE1, (state == RelayState::RELAY_ON) ? HIGH: LOW );
+    }
+
+
+  }
+
+//void HAL_ESP8266::ConfigureI2C(void (*ExternalInputInterrupt)(void))
+//{
     //SDA / SCL
     //I'm sure this should be 4,5 !
-    Wire.begin(5, 4);
+  //  Wire.begin(5, 4);
 
-    Wire.setClock(100000L);
+//    Wire.setClock(100000L);
 
     //D5 is interrupt pin from PCF8574
-    pinMode(PFC_INTERRUPT_PIN, INPUT_PULLUP);
+//    pinMode(PFC_INTERRUPT_PIN, INPUT_PULLUP);
 
     //Default
-    pcf8574 = &pcf8574_0x20;
+    //pcf8574 = &pcf8574_0x20;
 
     //Attempt to auto detect what i2c address the PCF8574 chip is at, check 0x38
-    Wire.beginTransmission(0x38);
+/*    Wire.beginTransmission(0x38);
     if (Wire.endTransmission() == 0)
     {
         pcf8574 = &pcf8574_0x38;
@@ -67,13 +81,13 @@ void HAL_ESP8266::ConfigureI2C(void (*ExternalInputInterrupt)(void))
     {
         SERIAL_DEBUG.println(F("PCF8574 at address 0x20"));
     }
-
+*/
     //Make PINs 4-7 INPUTs - the interrupt fires when triggered
-    pcf8574->begin();
+    //pcf8574->begin();
 
     //We test to see if the i2c expander is actually fitted
-    pcf8574->read8();
-
+    //pcf8574->read8();
+/*
     if (pcf8574->lastError() == 0)
     {
         SERIAL_DEBUG.println(F("PCF8574 replied"));
@@ -92,11 +106,15 @@ void HAL_ESP8266::ConfigureI2C(void (*ExternalInputInterrupt)(void))
         InputsEnabled = false;
         OutputsEnabled = false;
     }
+*/
+   // InputsEnabled = true;
+  //  OutputsEnabled = true;
+
 
     //internal pullup-resistor on the interrupt line via ESP8266
-    pcf8574->resetInterruptPin();
+    //pcf8574->resetInterruptPin();
 
-    attachInterrupt(digitalPinToInterrupt(PFC_INTERRUPT_PIN), ExternalInputInterrupt, FALLING);
-}
+    //attachInterrupt(digitalPinToInterrupt(PFC_INTERRUPT_PIN), ExternalInputInterrupt, FALLING);
+//}
 
-#endif
+//#endif
